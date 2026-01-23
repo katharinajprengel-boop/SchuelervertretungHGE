@@ -45,7 +45,10 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const accessToken = sessionData.session.access_token;
+      const { data, error } = await supabase.functions.invoke("check-subscription", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       
       if (error) {
         console.error("Error checking subscription:", error);

@@ -39,7 +39,11 @@ export function SubscriptionCheckoutModal({
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout");
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
 
       if (error) {
         throw new Error(error.message);
