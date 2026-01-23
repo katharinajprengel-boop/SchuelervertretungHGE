@@ -42,6 +42,7 @@ export function SubscriptionCheckoutModal({
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { email: sessionData.session?.user?.email },
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
 

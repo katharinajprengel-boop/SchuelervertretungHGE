@@ -35,16 +35,27 @@ serve(async (req) => {
     });
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
+    let user = null as null | { id: string; email: string | null };
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    if (authHeader) {
+      logStep("Authorization header found");
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+      if (userError) throw new Error(`Authentication error: ${userError.message}`);
+      user = userData.user as typeof user;
+    } else {
+      const body = await req.json().catch(() => ({}));
+      const email = (body as { email?: string }).email;
+      if (!email) throw new Error("No authorization or email provided");
+      const { data: adminData, error: adminError } = await supabaseClient.auth.admin.getUserByEmail(email);
+      if (adminError || !adminData?.user) {
+        throw new Error(`User lookup failed: ${adminError?.message || "No user found"}`);
+      }
+      user = { id: adminData.user.id, email: adminData.user.email };
+    }
+
+    if (!user?.email) throw new Error("User email not available");
+    logStep("User resolved", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
