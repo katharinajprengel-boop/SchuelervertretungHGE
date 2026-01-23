@@ -41,28 +41,46 @@ export function SubscriptionCheckoutModal({
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { email: sessionData.session?.user?.email },
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`;
+      const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: apiKey,
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({ email: sessionData.session?.user?.email }),
+        signal: controller.signal,
       });
 
-      if (error) {
-        throw new Error(error.message);
+      window.clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const message = await response.text();
+        throw new Error(message || `Checkout fehlgeschlagen (${response.status})`);
       }
 
+      const data = await response.json();
       if (data?.url) {
-        // Open Stripe Checkout in new tab
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
         onOpenChange(false);
       } else {
         throw new Error("Keine Checkout-URL erhalten");
       }
     } catch (error) {
       console.error("Checkout error:", error);
+      const message =
+        error instanceof Error && error.name === "AbortError"
+          ? "Checkout hat zu lange gedauert. Bitte erneut versuchen."
+          : undefined;
       toast({
         variant: "destructive",
         title: "Fehler beim Checkout",
-        description: "Bitte versuche es erneut oder kontaktiere den Support.",
+        description: message || "Bitte versuche es erneut oder kontaktiere den Support.",
       });
     } finally {
       setIsLoading(false);
