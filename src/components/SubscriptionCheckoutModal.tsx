@@ -34,6 +34,9 @@ export function SubscriptionCheckoutModal({
 }: SubscriptionCheckoutModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const paymentLink =
+    import.meta.env.VITE_STRIPE_PAYMENT_LINK ||
+    "https://buy.stripe.com/test_00wdRa9Iv4ft2Ppfz4bEA00";
 
   const handleCheckout = async () => {
     setIsLoading(true);
@@ -75,12 +78,13 @@ export function SubscriptionCheckoutModal({
       console.error("Checkout error:", error);
       const message =
         error instanceof Error && error.name === "AbortError"
-          ? "Checkout hat zu lange gedauert. Bitte erneut versuchen."
-          : undefined;
+          ? "Checkout hat zu lange gedauert. Wir öffnen den Zahlungslink."
+          : "Checkout ist gerade nicht erreichbar. Wir öffnen den Zahlungslink.";
+      window.location.href = paymentLink;
       toast({
         variant: "destructive",
         title: "Fehler beim Checkout",
-        description: message || "Bitte versuche es erneut oder kontaktiere den Support.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
