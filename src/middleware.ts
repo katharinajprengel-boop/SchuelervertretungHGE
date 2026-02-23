@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify } from "jose";
-import { sessionCookieName } from "./lib/auth";
+import { sessionCookieName } from "./lib/session";
 
 const encoder = new TextEncoder();
 

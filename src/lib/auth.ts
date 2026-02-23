@@ -1,8 +1,6 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-
-const SESSION_COOKIE = "sv_session";
-const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
+import { sessionCookieName, sessionMaxAge } from "./session";
 
 export type SessionPayload = {
   userId: string;
@@ -18,7 +16,7 @@ function getJwtSecret() {
 }
 
 export function signSession(payload: SessionPayload) {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: SESSION_MAX_AGE });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: sessionMaxAge });
 }
 
 export function verifySession(token: string): SessionPayload | null {
@@ -31,19 +29,19 @@ export function verifySession(token: string): SessionPayload | null {
 
 export function setSessionCookie(token: string) {
   cookies().set({
-    name: SESSION_COOKIE,
+    name: sessionCookieName,
     value: token,
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: SESSION_MAX_AGE,
+    maxAge: sessionMaxAge,
     path: "/"
   });
 }
 
 export function clearSessionCookie() {
   cookies().set({
-    name: SESSION_COOKIE,
+    name: sessionCookieName,
     value: "",
     httpOnly: true,
     sameSite: "lax",
@@ -54,10 +52,7 @@ export function clearSessionCookie() {
 }
 
 export function getSessionFromCookies(): SessionPayload | null {
-  const token = cookies().get(SESSION_COOKIE)?.value;
+  const token = cookies().get(sessionCookieName)?.value;
   if (!token) return null;
   return verifySession(token);
 }
-
-export const sessionCookieName = SESSION_COOKIE;
-export const sessionMaxAge = SESSION_MAX_AGE;
