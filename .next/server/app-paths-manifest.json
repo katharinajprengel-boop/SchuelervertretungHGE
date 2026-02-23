@@ -1,9 +1,0 @@
-{
-  "/flyer/[id]/page": "app/flyer/[id]/page.js",
-  "/admin/posts/page": "app/admin/posts/page.js",
-  "/admin/posts/[id]/edit/page": "app/admin/posts/[id]/edit/page.js",
-  "/api/files/[id]/route": "app/api/files/[id]/route.js",
-  "/admin/admins/page": "app/admin/admins/page.js",
-  "/flyer/page": "app/flyer/page.js",
-  "/page": "app/page.js"
-}
