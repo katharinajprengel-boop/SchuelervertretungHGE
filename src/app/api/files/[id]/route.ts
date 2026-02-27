@@ -18,10 +18,34 @@ export async function GET(request: Request, { params }: { params: { id: string }
   const url = new URL(request.url);
   const isDownload = url.searchParams.get("download") === "1";
 
-  const target = new URL(post.pdfPath);
-  if (isDownload) {
-    target.searchParams.set("download", "1");
+  let target: URL;
+  try {
+    target = new URL(post.pdfPath);
+  } catch {
+    return new NextResponse("Datei nicht verfuegbar", { status: 404 });
   }
 
-  return NextResponse.redirect(target);
+  const headers = new Headers();
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(target.toString(), { headers, cache: "no-store" });
+  if (!response.ok) {
+    return new NextResponse("Datei nicht gefunden", { status: 404 });
+  }
+
+  const pathname = target.pathname.split("/").pop() || "dokument.pdf";
+  const filename = pathname.endsWith(".pdf") ? pathname : `${pathname}.pdf`;
+  const disposition = isDownload ? "attachment" : "inline";
+
+  return new NextResponse(response.body, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `${disposition}; filename="${filename}"`,
+      "Cache-Control": "no-store"
+    }
+  });
 }
