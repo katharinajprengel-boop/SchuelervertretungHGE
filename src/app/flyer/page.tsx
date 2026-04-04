@@ -18,6 +18,13 @@ export default async function FlyerPage() {
         ) : (
           posts.map((post) => (
             <article className="card" key={post.id}>
+              {post.teaserImagePath ? (
+                <img
+                  src={post.teaserImagePath}
+                  alt={`Vorschaubild zu ${post.title}`}
+                  className="post-teaser"
+                />
+              ) : null}
               <div className="actions" style={{ justifyContent: "space-between" }}>
                 <h2>{post.title}</h2>
                 {post.pinned ? <span className="badge">Gepinnt</span> : null}

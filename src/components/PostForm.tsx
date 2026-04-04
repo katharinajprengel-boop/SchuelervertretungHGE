@@ -9,6 +9,7 @@ type PostValues = {
   title: string;
   description: string | null;
   content: string | null;
+  teaserImagePath: string | null;
   published: boolean;
   pinned: boolean;
 };
@@ -51,6 +52,27 @@ export default function PostForm({ action, initialValues, requirePdf }: Props) {
           required={requirePdf}
         />
       </div>
+      <div>
+        <label htmlFor="teaserImage">Vorschaubild / Teaserbanner (optional)</label>
+        <input
+          id="teaserImage"
+          name="teaserImage"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+        />
+      </div>
+      {initialValues.teaserImagePath ? (
+        <div>
+          <img
+            src={initialValues.teaserImagePath}
+            alt="Aktuelles Vorschaubild"
+            className="teaser-preview"
+          />
+          <label>
+            <input type="checkbox" name="removeTeaserImage" /> Vorschaubild entfernen
+          </label>
+        </div>
+      ) : null}
       <div className="actions">
         <label>
           <input

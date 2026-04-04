@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { adminCreateSchema, postSchema } from "@/lib/validators";
-import { deletePdf, storePdf } from "@/lib/uploads";
+import { deletePdf, storePdf, storeTeaserImage } from "@/lib/uploads";
 import { hashPassword } from "@/lib/password";
 import { redirect } from "next/navigation";
 
@@ -43,12 +43,19 @@ export async function createPost(_: ActionState, formData: FormData) {
 
   try {
     const pdfPath = await storePdf(file);
+    let teaserImagePath: string | null = null;
+    const teaserImage = formData.get("teaserImage");
+    if (teaserImage instanceof File && teaserImage.size > 0) {
+      teaserImagePath = await storeTeaserImage(teaserImage);
+    }
+
     await prisma.post.create({
       data: {
         ...parsed.data,
         description: toOptionalText(formData.get("description")),
         content: toOptionalText(formData.get("content")),
-        pdfPath
+        pdfPath,
+        teaserImagePath
       }
     });
   } catch (error) {
@@ -80,12 +87,32 @@ export async function updatePost(postId: string, _: ActionState, formData: FormD
   }
 
   let pdfPath = existing.pdfPath;
+  let teaserImagePath = existing.teaserImagePath;
   const file = formData.get("pdf");
+  const teaserImage = formData.get("teaserImage");
+  const removeTeaserImage = toBoolean(formData.get("removeTeaserImage"));
 
   if (file instanceof File && file.size > 0) {
     try {
       pdfPath = await storePdf(file);
       await deletePdf(existing.pdfPath);
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : "Upload fehlgeschlagen." };
+    }
+  }
+
+  if (removeTeaserImage && teaserImagePath) {
+    await deletePdf(teaserImagePath);
+    teaserImagePath = null;
+  }
+
+  if (teaserImage instanceof File && teaserImage.size > 0) {
+    try {
+      const nextTeaserImagePath = await storeTeaserImage(teaserImage);
+      if (teaserImagePath) {
+        await deletePdf(teaserImagePath);
+      }
+      teaserImagePath = nextTeaserImagePath;
     } catch (error) {
       return { error: error instanceof Error ? error.message : "Upload fehlgeschlagen." };
     }
@@ -97,7 +124,8 @@ export async function updatePost(postId: string, _: ActionState, formData: FormD
       ...parsed.data,
       description: toOptionalText(formData.get("description")),
       content: toOptionalText(formData.get("content")),
-      pdfPath
+      pdfPath,
+      teaserImagePath
     }
   });
 
@@ -111,6 +139,7 @@ export async function deletePost(postId: string) {
   if (post) {
     await prisma.post.delete({ where: { id: postId } });
     await deletePdf(post.pdfPath);
+    await deletePdf(post.teaserImagePath);
   }
 
   redirect("/admin/posts");

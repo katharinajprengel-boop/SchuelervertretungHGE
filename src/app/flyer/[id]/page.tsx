@@ -25,6 +25,13 @@ export default async function FlyerDetail({ params }: Props) {
           Zurück
         </Link>
       </div>
+      {post.teaserImagePath ? (
+        <img
+          src={post.teaserImagePath}
+          alt={`Vorschaubild zu ${post.title}`}
+          className="detail-teaser"
+        />
+      ) : null}
       {post.description ? <p>{post.description}</p> : null}
       {post.content ? <p>{post.content}</p> : null}
       <div className="card">

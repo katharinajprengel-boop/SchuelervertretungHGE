@@ -22,6 +22,7 @@ export default async function NewPostPage() {
             title: "",
             description: null,
             content: null,
+            teaserImagePath: null,
             published: false,
             pinned: false
           }}

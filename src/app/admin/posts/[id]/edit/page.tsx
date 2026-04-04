@@ -33,6 +33,7 @@ export default async function EditPostPage({ params }: Props) {
             title: post.title,
             description: post.description ?? null,
             content: post.content ?? null,
+            teaserImagePath: post.teaserImagePath ?? null,
             published: post.published,
             pinned: post.pinned
           }}
