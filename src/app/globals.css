@@ -245,12 +245,17 @@ textarea {
 }
 
 .badge {
-  display: inline-block;
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  padding: 6px 10px;
   border-radius: 999px;
   background: #f0e6e0;
   color: var(--primary-dark);
   font-size: 0.75rem;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .post-teaser {
