@@ -25,6 +25,9 @@ export default async function AdminPostsPage() {
         <Link className="button" href="/admin/posts/new">
           Beitrag erstellen
         </Link>
+        <Link className="button secondary" href="/admin/home">
+          Startseite bearbeiten
+        </Link>
         <Link className="button secondary" href="/admin/admins">
           Admins verwalten
         </Link>

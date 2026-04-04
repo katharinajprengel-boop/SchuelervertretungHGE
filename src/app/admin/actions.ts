@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
-import { adminCreateSchema, postSchema } from "@/lib/validators";
+import { adminCreateSchema, homeContentSchema, postSchema } from "@/lib/validators";
 import { deletePdf, storePdf, storeTeaserImage } from "@/lib/uploads";
 import { hashPassword } from "@/lib/password";
 import { redirect } from "next/navigation";
@@ -173,4 +173,29 @@ export async function createAdmin(_: ActionState, formData: FormData) {
   });
 
   redirect("/admin/admins");
+}
+
+export async function updateHomeContent(_: ActionState, formData: FormData) {
+  await requireAdmin();
+
+  const parsed = homeContentSchema.safeParse({
+    homeIntro: String(formData.get("homeIntro") || "").trim()
+  });
+
+  if (!parsed.success) {
+    return { error: "Bitte einen gueltigen Startseiten-Text eingeben." };
+  }
+
+  await prisma.siteContent.upsert({
+    where: { key: "home" },
+    create: {
+      key: "home",
+      homeIntro: parsed.data.homeIntro
+    },
+    update: {
+      homeIntro: parsed.data.homeIntro
+    }
+  });
+
+  redirect("/admin/home");
 }

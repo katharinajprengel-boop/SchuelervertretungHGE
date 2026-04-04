@@ -17,3 +17,7 @@ export const postSchema = z.object({
   published: z.boolean(),
   pinned: z.boolean()
 });
+
+export const homeContentSchema = z.object({
+  homeIntro: z.string().min(20).max(5000)
+});
