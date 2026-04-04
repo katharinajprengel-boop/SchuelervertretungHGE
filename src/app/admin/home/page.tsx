@@ -25,6 +25,7 @@ export default async function AdminHomeContentPage() {
         <HomeContentForm
           action={updateHomeContent}
           initialValue={content?.homeIntro ?? defaultHomeIntro}
+          initialImagePath={content?.homeImagePath ?? null}
         />
       </div>
     </main>

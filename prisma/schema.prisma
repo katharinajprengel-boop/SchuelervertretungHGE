@@ -29,7 +29,8 @@ model Post {
 }
 
 model SiteContent {
-  key       String   @id
-  homeIntro String
-  updatedAt DateTime @updatedAt
+  key           String   @id
+  homeIntro     String
+  homeImagePath String?
+  updatedAt     DateTime @updatedAt
 }

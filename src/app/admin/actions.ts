@@ -186,14 +186,38 @@ export async function updateHomeContent(_: ActionState, formData: FormData) {
     return { error: "Bitte einen gueltigen Startseiten-Text eingeben." };
   }
 
+  const existing = await prisma.siteContent.findUnique({ where: { key: "home" } });
+  let homeImagePath = existing?.homeImagePath ?? null;
+  const homeImage = formData.get("homeImage");
+  const removeHomeImage = toBoolean(formData.get("removeHomeImage"));
+
+  if (removeHomeImage && homeImagePath) {
+    await deletePdf(homeImagePath);
+    homeImagePath = null;
+  }
+
+  if (homeImage instanceof File && homeImage.size > 0) {
+    try {
+      const nextHomeImagePath = await storeTeaserImage(homeImage);
+      if (homeImagePath) {
+        await deletePdf(homeImagePath);
+      }
+      homeImagePath = nextHomeImagePath;
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : "Upload fehlgeschlagen." };
+    }
+  }
+
   await prisma.siteContent.upsert({
     where: { key: "home" },
     create: {
       key: "home",
-      homeIntro: parsed.data.homeIntro
+      homeIntro: parsed.data.homeIntro,
+      homeImagePath
     },
     update: {
-      homeIntro: parsed.data.homeIntro
+      homeIntro: parsed.data.homeIntro,
+      homeImagePath
     }
   });
 

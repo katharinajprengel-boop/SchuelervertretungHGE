@@ -26,6 +26,13 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
+        {content?.homeImagePath ? (
+          <img
+            src={content.homeImagePath}
+            alt="Startseitenbild der Schülervertretung"
+            className="home-banner"
+          />
+        ) : null}
       </div>
     </main>
   );
